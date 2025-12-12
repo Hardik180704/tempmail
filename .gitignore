@@ -1,0 +1,21 @@
+# Binaries
+bin/
+main
+server
+
+# OS Specific
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Local Storage
+storage/raw/
+*.eml
+
+# Config (if we have secrets, though currently config.yaml is committed as example)
+# config.yaml
+
+# Vendor
+vendor/
