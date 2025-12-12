@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // Address represents a temporary email address
@@ -17,18 +19,18 @@ type Address struct {
 
 // Email represents a received email message
 type Email struct {
-	ID          string       `json:"id"`
-	AddressID   string       `json:"address_id"`
-	Subject     string       `json:"subject"`
-	From        string       `json:"from"`
-	To          []string     `json:"to"`
-	TextBody    string       `json:"text_body"`
-	HTMLBody    string       `json:"html_body"`
-	RawContent  string       `json:"raw_content,omitempty"` // Stored in S3/Blob, only path or content here
-	Attachments []Attachment `json:"attachments"`
-	ReceivedAt  time.Time    `json:"received_at"`
-	Size        int64        `json:"size"`
-	IsRead      bool         `json:"is_read"`
+	ID          string         `json:"id"`
+	AddressID   string         `json:"address_id"`
+	Subject     string         `json:"subject"`
+	From        string         `json:"from"`
+	To          pq.StringArray `json:"to" gorm:"type:text[]"`
+	TextBody    string         `json:"text_body"`
+	HTMLBody    string         `json:"html_body"`
+	RawContent  string         `json:"raw_content,omitempty"` // Stored in S3/Blob, only path or content here
+	Attachments []Attachment   `json:"attachments" gorm:"foreignKey:EmailID"`
+	ReceivedAt  time.Time      `json:"received_at"`
+	Size        int64          `json:"size"`
+	IsRead      bool           `json:"is_read"`
 }
 
 // Attachment represents an email attachment

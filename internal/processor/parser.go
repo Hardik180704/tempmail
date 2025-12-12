@@ -6,6 +6,7 @@ import (
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/domain"
 	"github.com/jhillyerd/enmime"
+	"github.com/lib/pq"
 )
 
 func ParseEmail(path string) (*domain.Email, error) {
@@ -32,7 +33,7 @@ func ParseEmail(path string) (*domain.Email, error) {
 	// Recipients
 	to := env.GetHeader("To")
 	if to != "" {
-		email.To = []string{to}
+		email.To = pq.StringArray{to}
 	}
 
 	// Attachments (Metadata only)

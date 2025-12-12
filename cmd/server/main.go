@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 
+	"github.com/Hardik180704/tempmail-pro.git/internal/api"
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
 	"github.com/Hardik180704/tempmail-pro.git/internal/queue"
 	"github.com/Hardik180704/tempmail-pro.git/internal/smtp"
 	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
+	storePkg "github.com/Hardik180704/tempmail-pro.git/internal/store"
 )
 
 func main() {
@@ -21,13 +23,35 @@ func main() {
 		log.Fatalf("Failed to initialize storage: %v", err)
 	}
 
+	// Initialize Database
+	db, err := storePkg.NewDB(cfg.Database)
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	// Initialize Repository
+	repo := storePkg.NewRepository(db)
+
 	// Initialize Queue Client
 	queueClient := queue.NewClient(cfg.Redis)
 	defer queueClient.Close()
 
 	// Initialize and Start Queue Worker
-	worker := queue.NewWorker(cfg.Redis)
+	// Worker needs repo now
+	worker := queue.NewWorker(cfg.Redis, repo)
 	go worker.Start()
+
+	// Initialize API
+	apiHandler := api.NewHandler(repo)
+	r := api.NewRouter(apiHandler)
+
+	// Start API Server
+	go func() {
+		log.Printf("Starting API server on %s", cfg.Server.Port)
+		if err := r.Run(cfg.Server.Port); err != nil {
+			log.Fatalf("Failed to start API server: %v", err)
+		}
+	}()
 
 	// Initialize SMTP Server
 	smtpServer := smtp.NewServer(cfg.SMTP, store, queueClient)

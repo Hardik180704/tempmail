@@ -8,14 +8,16 @@ import (
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
 	"github.com/Hardik180704/tempmail-pro.git/internal/processor"
+	"github.com/Hardik180704/tempmail-pro.git/internal/store"
 	"github.com/hibiken/asynq"
 )
 
 type Worker struct {
 	server *asynq.Server
+	repo   store.Repository
 }
 
-func NewWorker(cfg config.RedisConfig) *Worker {
+func NewWorker(cfg config.RedisConfig, repo store.Repository) *Worker {
 	server := asynq.NewServer(
 		asynq.RedisClientOpt{
 			Addr:     cfg.Addr,
@@ -31,19 +33,19 @@ func NewWorker(cfg config.RedisConfig) *Worker {
 			},
 		},
 	)
-	return &Worker{server: server}
+	return &Worker{server: server, repo: repo}
 }
 
 func (w *Worker) Start() {
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(TypeEmailProcessing, HandleEmailProcessingTask)
+	mux.HandleFunc(TypeEmailProcessing, w.HandleEmailProcessingTask)
 
 	if err := w.server.Run(mux); err != nil {
 		log.Fatalf("Could not run server: %v", err)
 	}
 }
 
-func HandleEmailProcessingTask(ctx context.Context, t *asynq.Task) error {
+func (w *Worker) HandleEmailProcessingTask(ctx context.Context, t *asynq.Task) error {
 	var p EmailProcessingPayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
@@ -61,11 +63,34 @@ func HandleEmailProcessingTask(ctx context.Context, t *asynq.Task) error {
 	// Extract extra metadata
 	otp := processor.ExtractOTP(email.TextBody)
 	links := processor.ExtractLinks(email.TextBody)
+	_ = otp // Store in DB later if we add field
+	_ = links
 
-	// In a real implementation, we would now save this structured 'email' object to DB
-	// For now, we just log the results to prove it works
-	log.Printf(">>> PARSED EMAIL: Subject='%s', From='%s' <<<", email.Subject, email.From)
-	log.Printf(">>> EXTRACED: OTP='%s', LinkCount=%d <<<", otp, len(links))
+	// Link to Address
+	// Naive: assume single recipient in 'To' is our target
+	// In reality we should check all recipients and see which one belongs to our system
+	if len(email.To) > 0 {
+		// Just take the first one or cleaner logic
+		// TODO: Extract clean email address from "Name <email@domain.com>" format
+		targetEmail := email.To[0] 
+		addr, err := w.repo.GetAddressByEmail(targetEmail)
+		if err == nil {
+			email.AddressID = addr.ID
+		} else {
+			log.Printf("Address not found for %s, storing as orphan or assigning to catch-all", targetEmail)
+			// Decide policy: Create on fly? Verify existence?
+			// For now, if we can't find the address, we might drop it or save without AddressID (if nullable)
+			// Let's assume we require an address.
+		}
+	}
+
+	// Save to DB
+	if err := w.repo.SaveEmail(email); err != nil {
+		log.Printf("Failed to save email to DB: %v", err)
+		return err // Retry
+	}
+
+	log.Printf(">>> SAVED EMAIL: ID=%s Subject='%s' <<<", email.ID, email.Subject)
 
 	return nil
 }
