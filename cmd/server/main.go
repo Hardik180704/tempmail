@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
+	"github.com/Hardik180704/tempmail-pro.git/internal/smtp"
+	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
 )
 
 func main() {
@@ -13,7 +14,22 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	fmt.Printf("Starting TempMail Pro Service on port %s\n", cfg.Server.Port)
-	fmt.Printf("Database Host: %s\n", cfg.Database.Host)
-	fmt.Printf("SMTP Domain context: %s\n", cfg.SMTP.Domain)
+	// Initialize Storage
+	store, err := storage.NewLocalStore("storage/raw")
+	if err != nil {
+		log.Fatalf("Failed to initialize storage: %v", err)
+	}
+
+	// Initialize SMTP Server
+	smtpServer := smtp.NewServer(cfg.SMTP, store)
+
+	// Start SMTP Server
+	go func() {
+		if err := smtpServer.Start(); err != nil {
+			log.Fatalf("Failed to start SMTP server: %v", err)
+		}
+	}()
+
+	// Keep the main function running
+	select {}
 }
