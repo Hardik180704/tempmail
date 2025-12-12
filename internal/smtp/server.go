@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
+	"github.com/Hardik180704/tempmail-pro.git/internal/queue"
 	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
 	"github.com/emersion/go-smtp"
 )
@@ -15,8 +16,8 @@ type Server struct {
 	smtpServer *smtp.Server
 }
 
-func NewServer(cfg config.SMTPConfig, store storage.Store) *Server {
-	be := NewBackend(store)
+func NewServer(cfg config.SMTPConfig, store storage.Store, queueClient *queue.Client) *Server {
+	be := NewBackend(store, queueClient)
 
 	s := smtp.NewServer(be)
 	s.Addr = fmt.Sprintf(":%d", cfg.Port)

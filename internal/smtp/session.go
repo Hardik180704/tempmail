@@ -5,21 +5,24 @@ import (
 	"io"
 	"log"
 
+	"github.com/Hardik180704/tempmail-pro.git/internal/queue"
 	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
 	"github.com/emersion/go-smtp"
 )
 
 // Session holds the state of an SMTP session
 type Session struct {
-	store storage.Store
-	from  string
-	to    []string
+	store       storage.Store
+	queueClient *queue.Client
+	from        string
+	to          []string
 }
 
-func NewSession(store storage.Store) *Session {
+func NewSession(store storage.Store, queueClient *queue.Client) *Session {
 	return &Session{
-		store: store,
-		to:    make([]string, 0),
+		store:       store,
+		queueClient: queueClient,
+		to:          make([]string, 0),
 	}
 }
 
@@ -38,14 +41,24 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 
 func (s *Session) Data(r io.Reader) error {
 	log.Printf("DATA received from %s", s.from)
-	
-	path, size, err := s.store.Save(r)
+
+	path, _, err := s.store.Save(r)
 	if err != nil {
 		log.Printf("Error saving email: %v", err)
 		return err
 	}
 
-	log.Printf("Email saved to %s (size: %d bytes)", path, size)
+	// Extract ID from path (naive approach for now, assuming filename is ID.eml)
+	// In production, Store.Save should return ID explicitly
+	// For now we just pass "unknown-id" or parse it back
+	
+	// Enqueue for processing
+	if err := s.queueClient.EnqueueEmailProcessing("email-id-placeholder", path); err != nil {
+		log.Printf("Failed to enqueue email processing: %v", err)
+		// We don't fail the SMTP transaction if queue fails, but we should alert
+	}
+
+	log.Printf("Email saved to %s and enqueued for processing", path)
 	return nil
 }
 

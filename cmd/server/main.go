@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
+	"github.com/Hardik180704/tempmail-pro.git/internal/queue"
 	"github.com/Hardik180704/tempmail-pro.git/internal/smtp"
 	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
 )
@@ -20,8 +21,16 @@ func main() {
 		log.Fatalf("Failed to initialize storage: %v", err)
 	}
 
+	// Initialize Queue Client
+	queueClient := queue.NewClient(cfg.Redis)
+	defer queueClient.Close()
+
+	// Initialize and Start Queue Worker
+	worker := queue.NewWorker(cfg.Redis)
+	go worker.Start()
+
 	// Initialize SMTP Server
-	smtpServer := smtp.NewServer(cfg.SMTP, store)
+	smtpServer := smtp.NewServer(cfg.SMTP, store, queueClient)
 
 	// Start SMTP Server
 	go func() {
