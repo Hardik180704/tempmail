@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/api"
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
 	"github.com/Hardik180704/tempmail-pro.git/internal/queue"
+	"github.com/Hardik180704/tempmail-pro.git/internal/scheduler"
 	"github.com/Hardik180704/tempmail-pro.git/internal/smtp"
 	"github.com/Hardik180704/tempmail-pro.git/internal/storage"
 	storePkg "github.com/Hardik180704/tempmail-pro.git/internal/store"
@@ -43,7 +45,7 @@ func main() {
 
 	// Initialize API
 	apiHandler := api.NewHandler(repo)
-	r := api.NewRouter(apiHandler)
+	r := api.NewRouter(apiHandler, cfg.Redis)
 
 	// Start API Server
 	go func() {
@@ -62,6 +64,9 @@ func main() {
 			log.Fatalf("Failed to start SMTP server: %v", err)
 		}
 	}()
+
+	// Start Cleanup Job
+	scheduler.StartCleanupJob(repo, 1*time.Hour)
 
 	// Keep the main function running
 	select {}

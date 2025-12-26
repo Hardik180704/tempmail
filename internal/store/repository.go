@@ -16,6 +16,7 @@ type Repository interface {
 	SaveEmail(email *domain.Email) error
 	GetEmails(addressID string) ([]domain.Email, error)
 	GetEmail(id string) (*domain.Email, error)
+	DeleteExpiredData() error
 }
 
 type GormRepository struct {
@@ -51,6 +52,24 @@ func (r *GormRepository) CreateWebhookLog(log *domain.WebhookLog) error {
 		log.CreatedAt = time.Now()
 	}
 	return r.db.Create(log).Error
+}
+
+func (r *GormRepository) DeleteExpiredData() error {
+	// First delete emails belonging to expired addresses
+	// Note: This is an expensive operation if many rows. 
+	// In production we'd use batching or background worker with limit.
+	subQuery := r.db.Model(&domain.Address{}).Select("id").Where("expires_at < ?", time.Now())
+	
+	if err := r.db.Where("address_id IN (?)", subQuery).Delete(&domain.Email{}).Error; err != nil {
+		return err
+	}
+
+	// Now delete addresses
+	if err := r.db.Where("expires_at < ?", time.Now()).Delete(&domain.Address{}).Error; err != nil {
+		return err
+	}
+	
+	return nil
 }
 
 func (r *GormRepository) GetAddress(id string) (*domain.Address, error) {
