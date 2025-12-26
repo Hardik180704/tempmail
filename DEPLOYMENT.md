@@ -66,7 +66,23 @@ docker compose -f docker-compose.prod.yml up -d --build
 - **Frontend**: Visit `http://your-server-ip:3000`
 - **Backend Check**: `curl http://your-server-ip:8080/health`
 
-## 5. Production Considerations
+## 5. Can I use Vercel or Render?
+**Short Answer**: Partially, but **NOT** for the SMTP Server.
+
+### The Limitation (Port 25)
+To receive emails from the internet (Gmail, Outlook, etc.), your server **MUST** listen on **Port 25**.
+-   **Vercel**: Only supports Serverless (HTTP). It cannot run a permanent SMTP listener process.
+-   **Render / Heroku / Railway**: They typically **block Port 25** to prevent spam and generally don't allow binding to standard system ports.
+
+### Hybrid Approach (Advanced)
+If you really want to use Vercel for the frontend:
+1.  **Frontend**: Deploy `frontend/` to **Vercel** (`npm install && npm run build`).
+2.  **Backend & SMTP**: Deploy `backend/` to a **VPS** (Hetzner/Vultr) using Docker.
+3.  **Config**: Update Vercel's `NEXT_PUBLIC_API_BASE` to point to your VPS IP/Domain.
+
+**Recommendation**: For simplicity and checking all boxes (receiving email), a single **VPS** running Docker Compose is the most robust solution.
+
+## 6. Production Considerations
 - **Reverse Proxy**: It is highly recommended to run **Nginx** or **Caddy** in front of the services to handle SSL (HTTPS) and route traffic (e.g., `temp-mail.dev` -> Port 3000, `api.temp-mail.dev` -> Port 8080).
 - **Persistence**: Ensure the `./storage` volume (if used) or Docker volumes are backed up.
 - **Security**: Use a firewall (UFW) to allow only necessary ports (80, 443, 25). Do NOT expose Postgres/Redis ports (5432/6379) to the public internet.
