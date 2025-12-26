@@ -1,6 +1,8 @@
 module github.com/Hardik180704/tempmail-pro.git
 
-go 1.24.5
+go 1.23.0
+
+toolchain go1.24.5
 
 require (
 	github.com/emersion/go-smtp v0.24.0
