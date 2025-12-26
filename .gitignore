@@ -1,7 +1,7 @@
 # Binaries
 bin/
-main
-server
+/main
+/server
 
 # OS Specific
 .DS_Store

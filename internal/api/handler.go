@@ -18,7 +18,8 @@ func NewHandler(repo store.Repository) *Handler {
 }
 
 type CreateAddressRequest struct {
-	Alias string `json:"alias"`
+	Alias      string `json:"alias"`
+	WebhookURL string `json:"webhook_url"`
 }
 
 func (h *Handler) CreateAddress(c *gin.Context) {
@@ -31,7 +32,7 @@ func (h *Handler) CreateAddress(c *gin.Context) {
 		req.Alias = generateRandomAlias(8)
 	}
 
-	addr, err := h.repo.CreateAddress(req.Alias)
+	addr, err := h.repo.CreateAddress(req.Alias, req.WebhookURL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

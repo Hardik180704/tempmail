@@ -21,7 +21,7 @@ func NewDB(cfg config.DatabaseConfig) (*gorm.DB, error) {
 
 	// Auto Migrate
 	log.Println("Running auto-migrations...")
-	if err := db.AutoMigrate(&domain.Address{}, &domain.Email{}, &domain.Attachment{}); err != nil {
+	if err := db.AutoMigrate(&domain.Address{}, &domain.Email{}, &domain.Attachment{}, &domain.WebhookLog{}); err != nil {
 		return nil, err
 	}
 

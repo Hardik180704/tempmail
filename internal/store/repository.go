@@ -9,7 +9,8 @@ import (
 )
 
 type Repository interface {
-	CreateAddress(alias string) (*domain.Address, error)
+	CreateAddress(alias string, webhookURL string) (*domain.Address, error)
+	CreateWebhookLog(log *domain.WebhookLog) error
 	GetAddress(id string) (*domain.Address, error)
 	GetAddressByEmail(email string) (*domain.Address, error)
 	SaveEmail(email *domain.Email) error
@@ -25,20 +26,31 @@ func NewRepository(db *gorm.DB) *GormRepository {
 	return &GormRepository{db: db}
 }
 
-func (r *GormRepository) CreateAddress(alias string) (*domain.Address, error) {
+func (r *GormRepository) CreateAddress(alias string, webhookURL string) (*domain.Address, error) {
 	addr := &domain.Address{
-		ID:        uuid.New().String(),
-		Email:     alias + "@temp-mail.dev", // TODO: Make domain configurable or fully random
-		Alias:     alias,
-		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(24 * time.Hour), // Default 24h
-		IsActive:  true,
+		ID:         uuid.New().String(),
+		Email:      alias + "@temp-mail.dev", // TODO: Config
+		Alias:      alias,
+		WebhookURL: webhookURL,
+		CreatedAt:  time.Now(),
+		ExpiresAt:  time.Now().Add(24 * time.Hour),
+		IsActive:   true,
 	}
 
 	if err := r.db.Create(addr).Error; err != nil {
 		return nil, err
 	}
 	return addr, nil
+}
+
+func (r *GormRepository) CreateWebhookLog(log *domain.WebhookLog) error {
+	if log.ID == "" {
+		log.ID = uuid.New().String()
+	}
+	if log.CreatedAt.IsZero() {
+		log.CreatedAt = time.Now()
+	}
+	return r.db.Create(log).Error
 }
 
 func (r *GormRepository) GetAddress(id string) (*domain.Address, error) {

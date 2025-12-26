@@ -8,13 +8,28 @@ import (
 
 // Address represents a temporary email address
 type Address struct {
-	ID        string    `json:"id"`
-	Email     string    `json:"email"`
-	UserID    string    `json:"user_id,omitempty"` // For authenticated users/API keys
-	Alias     string    `json:"alias,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	ExpiresAt time.Time `json:"expires_at"`
-	IsActive  bool      `json:"is_active"`
+	ID         string    `json:"id"`
+	Email      string    `json:"email"`
+	UserID     string    `json:"user_id,omitempty"` // For authenticated users/API keys
+	Alias      string    `json:"alias,omitempty"`
+	WebhookURL string    `json:"webhook_url,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+	ExpiresAt  time.Time `json:"expires_at"`
+	IsActive   bool      `json:"is_active"`
+}
+
+// WebhookLog tracks webhook delivery attempts
+type WebhookLog struct {
+	ID           string    `json:"id"`
+	AddressID    string    `json:"address_id"`
+	EmailID      string    `json:"email_id"`
+	URL          string    `json:"url"`
+	StatusCode   int       `json:"status_code"`
+	Success      bool      `json:"success"`
+	Attempt      int       `json:"attempt"`
+	Response     string    `json:"response"` // Truncated response body
+	ErrorMessage string    `json:"error_message"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // Email represents a received email message

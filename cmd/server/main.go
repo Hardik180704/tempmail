@@ -38,7 +38,7 @@ func main() {
 
 	// Initialize and Start Queue Worker
 	// Worker needs repo now
-	worker := queue.NewWorker(cfg.Redis, repo)
+	worker := queue.NewWorker(cfg.Redis, repo, queueClient)
 	go worker.Start()
 
 	// Initialize API

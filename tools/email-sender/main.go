@@ -17,7 +17,7 @@ func main() {
 	if err := c.Mail("sender@example.org"); err != nil {
 		log.Fatal(err)
 	}
-	if err := c.Rcpt("testapi@temp-mail.dev"); err != nil {
+	if err := c.Rcpt("webhooktest@temp-mail.dev"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = fmt.Fprintf(wc, "From: sender@example.org\r\nTo: testapi@temp-mail.dev\r\nSubject: Test Email\r\n\r\nThis is the email body")
+	_, err = fmt.Fprintf(wc, "From: sender@example.org\r\nTo: webhooktest@temp-mail.dev\r\nSubject: Webhook Test\r\n\r\nThis should trigger a webhook.")
 	if err != nil {
 		log.Fatal(err)
 	}
