@@ -4,11 +4,18 @@ import (
 	"time"
 
 	"github.com/Hardik180704/tempmail-pro.git/internal/config"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func NewRouter(h *Handler, cfg config.RedisConfig) *gin.Engine {
 	r := gin.Default()
+	
+	// CORS Config
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+	r.Use(cors.New(config))
 	
 	// Middleware
 	mw := NewMiddleware(cfg)
