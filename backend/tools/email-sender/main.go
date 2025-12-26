@@ -56,7 +56,7 @@ func main() {
 		
 		msg := fmt.Sprintf("From: %s\r\nTo: ryu815bo@temp-mail.dev\r\nSubject: %s\r\nContent-Type: text/html\r\n\r\n%s", e.From, e.Subject, e.Body)
 		
-		_, err = fmt.Fprintf(wc, msg)
+		_, err = fmt.Fprint(wc, msg)
 		if err != nil {
 			log.Fatal(err)
 		}
