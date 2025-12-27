@@ -114,6 +114,28 @@ See the full **[Deployment Guide](DEPLOYMENT.md)** for details.
 
 ---
 
+## 🛠️ DevOps Concepts
+This project implements modern DevOps best practices:
+
+### 1. Monorepo Architecture
+-   **Structure**: Both `backend` (Go) and `frontend` (Next.js) reside in a single repository for unified versioning and easier code sharing.
+-   **Tooling**: Root-level `Makefile` and `docker-compose` orchestrate the entire workspace.
+
+### 2. Containerization (Docker)
+-   **Multi-Stage Builds**: We use multi-stage Dockerfiles to keep images tiny.
+    -   *Go*: Builds on `golang:1.23`, runs on `alpine:3.19` (Binary only).
+    -   *Next.js*: Builds with all deps, runs with `standalone` output (No `node_modules` bloat).
+-   **Optimization**: Layer caching is utilized to speed up builds.
+
+### 3. CI/CD Pipeline (GitHub Actions)
+-   **Automated Testing**: Every push triggers:
+    -   Backend: `go test`, `go vet`, and build verification.
+    -   Frontend: Linting (`eslint`) and build check.
+    -   Docker: Verifies that container images build successfully.
+-   **Infrastructure as Code (IaC)**: The entire infrastructure (services, networks, volumes) is defined in `docker-compose.prod.yml`.
+
+---
+
 ## 📂 Project Structure
 ```bash
 .
