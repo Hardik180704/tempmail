@@ -24,9 +24,15 @@ Since this app needs **Port 25** (SMTP) to receive emails, not all cloud provide
 | **Hetzner** | Open (ID verify required) | ⭐ **Best Choice** (Cheap & Powerful) |
 | **Vultr** | Blocked (Open via Tkts) | ✅ Good Alternative |
 | **DigitalOcean** | Blocked for new accts | ⚠️ Hard to unlock |
-| **AWS / GCP** | Strictly Blocked | ❌ Avoid for this project |
+| **AWS / GCP / Azure** | Outbound Blocked | ⚠️ Doable but costly (Receive-only works) |
 
 **Note**: You typically need the cheapest "Ubuntu 22.04" or "Debian 12" server (approx $4-6/month).
+
+### AWS EC2 Specifics
+Yes, you **can** use Amazon EC2, but keep in mind:
+1.  **Inbound Port 25**: Generally OPEN. You must add a "Security Group" rule to allow `Custom TCP Rule` -> `Port 25` -> `Source 0.0.0.0/0`.
+2.  **Outbound Port 25**: BLOCKED by default. This application is primarily "Receive Only", so it *will* work. However, if you ever add features to *reply* or *forward* emails, they will fail unless you submit a "Request to Remove Email Sending Limitations" form to AWS.
+3.  **Elastic IP**: You should allocate an "Elastic IP" so your IP address doesn't change on reboot (crucial for DNS records).
 
 ## 3. Configuration
 Create a `.env` file in the root directory (do NOT commit this to Git).

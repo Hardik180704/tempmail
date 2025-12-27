@@ -60,8 +60,8 @@ func (w *Worker) HandleEmailProcessingTask(ctx context.Context, t *asynq.Task) e
 	// Parse the email
 	email, err := processor.ParseEmail(p.Path)
 	if err != nil {
-		log.Printf("Failed to parse email: %v", err)
-		return err
+		log.Printf("Failed to parse email (skipping): %v", err)
+		return fmt.Errorf("parse error: %v: %w", err, asynq.SkipRetry)
 	}
 
 	// Extract extra metadata

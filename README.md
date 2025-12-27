@@ -18,6 +18,13 @@
 
 ---
 
+## 🎥 Demo
+<video src="frontend/public/demo.mp4" controls="controls" style="max-width: 100%;">
+  Your browser does not support the video tag.
+</video>
+
+---
+
 ## 📖 Overview
 **TempMail** is a modern, privacy-focused disposable email service engineered for performance and scalability. It combines the raw speed of a **Go backend** (handling SMTP & API) with a responsive, real-time **Next.js frontend**.
 

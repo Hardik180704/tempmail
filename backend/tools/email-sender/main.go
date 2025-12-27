@@ -45,7 +45,8 @@ func main() {
 		if err := c.Mail(e.From); err != nil {
 			log.Fatal(err)
 		}
-		if err := c.Rcpt("ryu815bo@temp-mail.dev"); err != nil {
+// 1. In c.Rcpt
+		if err := c.Rcpt("cncyrcce@temp-mail.dev"); err != nil {
 			log.Fatal(err)
 		}
 
@@ -53,8 +54,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		
-		msg := fmt.Sprintf("From: %s\r\nTo: ryu815bo@temp-mail.dev\r\nSubject: %s\r\nContent-Type: text/html\r\n\r\n%s", e.From, e.Subject, e.Body)
+
+// 2. In msg construction
+		msg := fmt.Sprintf("From: %s\r\nTo: cncyrcce@temp-mail.dev\r\nSubject: %s\r\nContent-Type: text/html\r\n\r\n%s", e.From, e.Subject, e.Body)
 		
 		_, err = fmt.Fprint(wc, msg)
 		if err != nil {
