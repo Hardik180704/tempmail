@@ -19,7 +19,7 @@
 ---
 
 ## 🎥 Demo
-<video src="frontend/public/demo.mp4" controls="controls" style="max-width: 100%;">
+<video src="https://github.com/Hardik180704/tempmail/releases/tag/v1.0.0" controls="controls" style="max-width: 100%;">
   Your browser does not support the video tag.
 </video>
 
